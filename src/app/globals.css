@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0A1F1C;
+  --color-ivory: #F7F3EC;
+  --color-teal: #2D9C8F;
+  --color-coral: #FF7A59;
+  --color-charcoal: #1A1A1A;
+
+  --font-display: var(--font-fraunces), serif;
+  --font-body: var(--font-manrope), sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: #2D9C8F;
+  color: #F7F3EC;
+}
