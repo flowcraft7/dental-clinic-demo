@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const container = {
   hidden: {},
@@ -16,26 +18,46 @@ const item = {
 } as unknown as Variants;
 
 export default function Hero() {
+  const [title, setTitle] = useState("Dental care that feels different.");
+  const [subtitle, setSubtitle] = useState(
+    "Modern, gentle, and built around you. Book your visit in under a minute — no phone calls needed."
+  );
+
+  useEffect(() => {
+    const loadContent = async () => {
+      const { data } = await supabase
+        .from("site_content")
+        .select("key, value")
+        .in("key", ["hero_title", "hero_subtitle"]);
+
+      data?.forEach((row: any) => {
+        if (row.key === "hero_title" && row.value) setTitle(row.value);
+        if (row.key === "hero_subtitle" && row.value) setSubtitle(row.value);
+      });
+    };
+    loadContent();
+  }, []);
+
+  // splits title so last word can be styled in coral italic, matches original look
+  const words = title.trim().split(" ");
+  const lastWord = words.pop();
+  const restOfTitle = words.join(" ");
+
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-ivory pt-24">
-      {/* ambient floating blobs */}
       <motion.div
         animate={{ y: [0, 30, 0], x: [0, 20, 0] }}
-          transition={{ duration: 10, repeat: Infinity, ease: [0.42, 0, 0.58, 1] }}
+        transition={{ duration: 10, repeat: Infinity, ease: [0.42, 0, 0.58, 1] }}
         className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-teal/20 blur-3xl"
       />
       <motion.div
         animate={{ y: [0, -25, 0], x: [0, -15, 0] }}
-          transition={{ duration: 12, repeat: Infinity, ease: [0.42, 0, 0.58, 1] }}
+        transition={{ duration: 12, repeat: Infinity, ease: [0.42, 0, 0.58, 1] }}
         className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-coral/20 blur-3xl"
       />
 
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center relative z-10">
-        <motion.div
-          variants={container}
-          initial="hidden"
-          animate="show"
-        >
+        <motion.div variants={container} initial="hidden" animate="show">
           <motion.span
             variants={item}
             className="inline-block text-teal font-body text-sm font-semibold tracking-wide uppercase mb-4"
@@ -47,14 +69,11 @@ export default function Hero() {
             variants={item}
             className="font-display text-5xl md:text-6xl font-semibold text-ink leading-tight mb-6"
           >
-            Dental care that feels <span className="text-coral italic">different.</span>
+            {restOfTitle} <span className="text-coral italic">{lastWord}</span>
           </motion.h1>
 
-          <motion.p
-            variants={item}
-            className="text-charcoal/70 text-lg mb-8 max-w-md"
-          >
-            Modern, gentle, and built around you. Book your visit in under a minute — no phone calls needed.
+          <motion.p variants={item} className="text-charcoal/70 text-lg mb-8 max-w-md">
+            {subtitle}
           </motion.p>
 
           <motion.div variants={item} className="flex gap-4">
