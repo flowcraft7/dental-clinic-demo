@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const reviews = [
   {
@@ -23,6 +23,13 @@ const reviews = [
 
 export default function Testimonials() {
   const [active, setActive] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActive((a) => (a + 1) % reviews.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <section id="testimonials" className="py-28 bg-ivory relative overflow-hidden">

@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import ChatWidget from "./ChatWidget";
+import { supabase } from "@/lib/supabase";
 
 const services = [
   "Teeth Cleaning",
@@ -26,7 +27,13 @@ export default function BookAppointment() {
   const next = () => setStep((s) => Math.min(s + 1, 3));
   const back = () => setStep((s) => Math.max(s - 1, 1));
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    await supabase.from("appointments").insert({
+      name: form.name,
+      phone: form.phone,
+      service: form.service,
+      date: form.date,
+    });
     setSubmitted(true);
   };
 
@@ -71,7 +78,6 @@ export default function BookAppointment() {
             </motion.div>
           ) : (
             <>
-              {/* progress bar */}
               <div className="flex gap-2 mb-8">
                 {[1, 2, 3].map((n) => (
                   <div key={n} className="flex-1 h-1.5 rounded-full bg-ink/10 overflow-hidden">

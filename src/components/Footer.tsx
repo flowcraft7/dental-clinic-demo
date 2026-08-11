@@ -23,7 +23,7 @@ export default function Footer() {
         </div>
 
         <span className="text-ivory/30 text-xs">
-          © 2026 Bright Smile Dental. Demo site.
+           © 2026 Bright Smile Dental. All rights reserved.
         </span>
       </div>
     </footer>
