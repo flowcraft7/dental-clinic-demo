@@ -28,7 +28,9 @@ export default function PatientsAdmin() {
   };
 
   useEffect(() => {
-    load();
+    void (async () => {
+      await load();
+    })();
   }, []);
 
   const addPatient = async () => {

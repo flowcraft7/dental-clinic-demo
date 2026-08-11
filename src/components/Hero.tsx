@@ -30,7 +30,7 @@ export default function Hero() {
         .select("key, value")
         .in("key", ["hero_title", "hero_subtitle"]);
 
-      data?.forEach((row: any) => {
+      data?.forEach((row: { key?: string; value?: string }) => {
         if (row.key === "hero_title" && row.value) setTitle(row.value);
         if (row.key === "hero_subtitle" && row.value) setSubtitle(row.value);
       });

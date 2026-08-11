@@ -1,20 +1,12 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ChatWidget from "./ChatWidget";
 import { supabase } from "@/lib/supabase";
 
-const services = [
-  "Teeth Cleaning",
-  "Cosmetic Whitening",
-  "Dental Implants",
-  "Root Canal",
-  "Orthodontics",
-  "Emergency Care",
-];
-
 export default function BookAppointment() {
+  const [services, setServices] = useState<string[]>([]);
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     name: "",
@@ -23,6 +15,17 @@ export default function BookAppointment() {
     date: "",
   });
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    const loadServices = async () => {
+      const { data } = await supabase
+        .from("services")
+        .select("title")
+        .order("sort_order", { ascending: true });
+      setServices(data?.map((s) => s.title) || []);
+    };
+    loadServices();
+  }, []);
 
   const next = () => setStep((s) => Math.min(s + 1, 3));
   const back = () => setStep((s) => Math.max(s - 1, 1));

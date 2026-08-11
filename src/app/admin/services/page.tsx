@@ -25,7 +25,9 @@ export default function ServicesAdmin() {
   };
 
   useEffect(() => {
-    load();
+    void (async () => {
+      await load();
+    })();
   }, []);
 
   const updateField = (id: string, field: keyof Service, value: string) => {

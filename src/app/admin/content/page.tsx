@@ -23,7 +23,9 @@ export default function ContentAdmin() {
   };
 
   useEffect(() => {
-    load();
+    void (async () => {
+      await load();
+    })();
   }, []);
 
   const update = (key: string, value: string) => {

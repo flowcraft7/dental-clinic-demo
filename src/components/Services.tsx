@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -29,9 +30,9 @@ const item = {
     y: 0,
     scale: 1,
     rotate: 0,
-    transition: { duration: 0.7, ease: "easeOut" },
+    transition: { duration: 0.7, ease: [0, 0, 0.2, 1] },
   },
-};
+} as unknown as Variants;
 
 export default function Services() {
   const [services, setServices] = useState<Service[]>([]);
@@ -84,7 +85,7 @@ export default function Services() {
                   transition={{
                     duration: 3 + (i % 3),
                     repeat: Infinity,
-                    ease: "easeInOut",
+                    ease: [0.42, 0, 0.58, 1],
                     delay: i * 0.2,
                   }}
                   whileHover={{ y: -12, rotate: -1, scale: 1.03 }}

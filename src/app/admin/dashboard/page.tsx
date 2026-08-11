@@ -30,7 +30,9 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    load();
+    void (async () => {
+      await load();
+    })();
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
