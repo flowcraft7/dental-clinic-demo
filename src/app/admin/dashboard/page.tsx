@@ -8,6 +8,7 @@ type Appointment = {
   id: string;
   name: string;
   phone: string;
+  email: string;
   service: string;
   date: string;
   status: "pending" | "approved" | "cancelled";
@@ -30,9 +31,7 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    void (async () => {
-      await load();
-    })();
+    load();
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
@@ -40,6 +39,21 @@ export default function Dashboard() {
     setAppointments((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status: status as Appointment["status"] } : a))
     );
+
+    const appt = appointments.find((a) => a.id === id);
+    if (appt?.email) {
+      fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: appt.email,
+          name: appt.name,
+          service: appt.service,
+          date: appt.date,
+          status,
+        }),
+      });
+    }
   };
 
   const filtered = filter === "all" ? appointments : appointments.filter((a) => a.status === filter);
@@ -92,7 +106,7 @@ export default function Dashboard() {
                 <div>
                   <p className="font-semibold text-ink">{a.name}</p>
                   <p className="text-sm text-charcoal/60">
-                    {a.phone} · {a.service} · {a.date}
+                    {a.phone} · {a.email} · {a.service} · {a.date}
                   </p>
                 </div>
 

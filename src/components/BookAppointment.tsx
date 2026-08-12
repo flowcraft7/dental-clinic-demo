@@ -11,6 +11,7 @@ export default function BookAppointment() {
   const [form, setForm] = useState({
     name: "",
     phone: "",
+    email: "",
     service: "",
     date: "",
   });
@@ -34,6 +35,7 @@ export default function BookAppointment() {
     await supabase.from("appointments").insert({
       name: form.name,
       phone: form.phone,
+      email: form.email,
       service: form.service,
       date: form.date,
     });
@@ -121,6 +123,16 @@ export default function BookAppointment() {
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       placeholder="(555) 123-4567"
+                      className="w-full border border-ink/15 rounded-lg px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-teal"
+                    />
+                    <label className="block text-sm font-medium text-ink mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      placeholder="john@example.com"
                       className="w-full border border-ink/15 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal"
                     />
                   </motion.div>
