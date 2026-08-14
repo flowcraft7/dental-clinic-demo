@@ -1,9 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
-import type { Variants } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { supabase } from "@/lib/supabase";
+import Hero3DTooth from "./Hero3DTooth";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const container = {
   hidden: {},
@@ -14,14 +18,19 @@ const container = {
 
 const item = {
   hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0, 0, 0.2, 1] } },
-} as unknown as Variants;
+  show: { opacity: 1, y: 0, transition: { duration: 0.7 } },
+};
 
 export default function Hero() {
   const [title, setTitle] = useState("Dental care that feels different.");
   const [subtitle, setSubtitle] = useState(
     "Modern, gentle, and built around you. Book your visit in under a minute — no phone calls needed."
   );
+
+  const sectionRef = useRef<HTMLElement>(null);
+  const blob1Ref = useRef<HTMLDivElement>(null);
+  const blob2Ref = useRef<HTMLDivElement>(null);
+  const toothWrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadContent = async () => {
@@ -30,7 +39,7 @@ export default function Hero() {
         .select("key, value")
         .in("key", ["hero_title", "hero_subtitle"]);
 
-      data?.forEach((row: { key?: string; value?: string }) => {
+      data?.forEach((row) => {
         if (row.key === "hero_title" && row.value) setTitle(row.value);
         if (row.key === "hero_subtitle" && row.value) setSubtitle(row.value);
       });
@@ -38,23 +47,65 @@ export default function Hero() {
     loadContent();
   }, []);
 
-  // splits title so last word can be styled in coral italic, matches original look
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.to(blob1Ref.current, {
+        yPercent: 40,
+        ease: "none",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+
+      gsap.to(blob2Ref.current, {
+        yPercent: -30,
+        ease: "none",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+
+      gsap.to(toothWrapRef.current, {
+        yPercent: 20,
+        ease: "none",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: true,
+        },
+      });
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
+
   const words = title.trim().split(" ");
   const lastWord = words.pop();
   const restOfTitle = words.join(" ");
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden bg-ivory pt-24">
-      <motion.div
-        animate={{ y: [0, 30, 0], x: [0, 20, 0] }}
-        transition={{ duration: 10, repeat: Infinity, ease: [0.42, 0, 0.58, 1] }}
-        className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-teal/20 blur-3xl"
-      />
-      <motion.div
-        animate={{ y: [0, -25, 0], x: [0, -15, 0] }}
-        transition={{ duration: 12, repeat: Infinity, ease: [0.42, 0, 0.58, 1] }}
-        className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-coral/20 blur-3xl"
-      />
+    <section ref={sectionRef} className="relative min-h-screen flex items-center overflow-hidden bg-ivory pt-24">
+      <div ref={blob1Ref} className="absolute -top-20 -left-20 w-96 h-96">
+        <motion.div
+          animate={{ y: [0, 30, 0], x: [0, 20, 0] }}
+          transition={{ duration: 10, repeat: Infinity }}
+          className="w-full h-full rounded-full bg-teal/20 blur-3xl"
+        />
+      </div>
+      <div ref={blob2Ref} className="absolute bottom-0 right-0 w-96 h-96">
+        <motion.div
+          animate={{ y: [0, -25, 0], x: [0, -15, 0] }}
+          transition={{ duration: 12, repeat: Infinity }}
+          className="w-full h-full rounded-full bg-coral/20 blur-3xl"
+        />
+      </div>
 
       <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center relative z-10">
         <motion.div variants={container} initial="hidden" animate="show">
@@ -83,7 +134,6 @@ export default function Hero() {
             >
               Book Appointment
             </a>
-
             <a
               href="#services"
               className="border border-ink/20 text-ink px-7 py-3 rounded-full font-medium hover:bg-ink hover:text-ivory transition-colors"
@@ -93,32 +143,14 @@ export default function Hero() {
           </motion.div>
         </motion.div>
 
-        {/* floating tooth illustration */}
         <motion.div
+          ref={toothWrapRef}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.3 }}
           className="relative flex justify-center"
         >
-          <motion.div
-            animate={{ y: [0, -20, 0], rotate: [0, 3, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: [0.42, 0, 0.58, 1] }}
-          >
-            <svg width="280" height="320" viewBox="0 0 280 320" fill="none">
-              <defs>
-                <linearGradient id="toothGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#FFFFFF" />
-                  <stop offset="100%" stopColor="#2D9C8F" stopOpacity="0.25" />
-                </linearGradient>
-              </defs>
-              <path
-                d="M140 20c-45 0-70 30-70 70 0 35 15 55 20 90 4 28 12 60 30 90 6 10 20 10 26 0 8-15 12-35 14-55 2 20 6 40 14 55 6 10 20 10 26 0 18-30 26-62 30-90 5-35 20-55 20-90 0-40-25-70-70-70-8 0-15 3-20 8-5-5-12-8-20-8z"
-                fill="url(#toothGrad)"
-                stroke="#2D9C8F"
-                strokeWidth="2"
-              />
-            </svg>
-          </motion.div>
+          <Hero3DTooth />
         </motion.div>
       </div>
     </section>
