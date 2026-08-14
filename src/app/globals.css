@@ -27,3 +27,9 @@ body {
   background: #2D9C8F;
   color: #F7F3EC;
 }
+
+@keyframes shimmer {
+  to {
+    background-position: 200% center;
+  }
+}

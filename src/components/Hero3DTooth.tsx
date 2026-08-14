@@ -14,50 +14,105 @@ export default function Hero3DTooth() {
     const height = mount.clientHeight;
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(0, 0, 6);
+    const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+    camera.position.set(0, 0.3, 7);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mount.appendChild(renderer.domElement);
 
-    // stylized "tooth" — smooth blob built from a scaled icosahedron
-    const geometry = new THREE.IcosahedronGeometry(1.6, 6);
-    const positions = geometry.attributes.position;
-    for (let i = 0; i < positions.count; i++) {
-      const y = positions.getY(i);
-      const scale = 1 + Math.max(0, -y) * 0.35; // wider top, tapered bottom like a tooth
-      positions.setX(i, positions.getX(i) * (y > 0.3 ? 1.1 : 1));
-      positions.setZ(i, positions.getZ(i) * (y > 0.3 ? 1.1 : 1));
-      positions.setY(i, y * 1.3);
-    }
-    geometry.computeVertexNormals();
+    // ---- Tooth group: crown + two roots, matching the original silhouette ----
+    const toothGroup = new THREE.Group();
 
-    const material = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color("#F7F3EC"),
-      roughness: 0.25,
-      metalness: 0.05,
-      clearcoat: 0.6,
-      clearcoatRoughness: 0.2,
-      transmission: 0.15,
-      thickness: 1,
+    const pearlMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color("#FBFAF7"),
+      roughness: 0.15,
+      metalness: 0.0,
+      clearcoat: 1,
+      clearcoatRoughness: 0.1,
+      transmission: 0.25,
+      thickness: 1.2,
+      iridescence: 0.6,
+      iridescenceIOR: 1.3,
+      sheen: 1,
+      sheenColor: new THREE.Color("#2D9C8F"),
     });
 
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
+    // crown (wide top, two-lobed like a molar)
+    const crownGeo = new THREE.SphereGeometry(1.5, 48, 48);
+    crownGeo.scale(1.15, 0.85, 1);
+    const crown = new THREE.Mesh(crownGeo, pearlMaterial);
+    crown.position.y = 1.1;
+    toothGroup.add(crown);
 
-    const rim = new THREE.DirectionalLight("#2D9C8F", 2);
+    // two roots tapering down
+    const rootGeo = new THREE.ConeGeometry(0.42, 2.2, 24);
+    const rootL = new THREE.Mesh(rootGeo, pearlMaterial);
+    rootL.position.set(-0.55, -1.1, 0);
+    rootL.rotation.z = 0.12;
+    toothGroup.add(rootL);
+
+    const rootR = new THREE.Mesh(rootGeo, pearlMaterial);
+    rootR.position.set(0.55, -1.1, 0);
+    rootR.rotation.z = -0.12;
+    toothGroup.add(rootR);
+
+    toothGroup.scale.set(0.85, 0.85, 0.85);
+    scene.add(toothGroup);
+
+    // ---- lighting ----
+    const rim = new THREE.DirectionalLight("#2D9C8F", 2.2);
     rim.position.set(-3, 2, 4);
     scene.add(rim);
 
-    const fill = new THREE.DirectionalLight("#FF7A59", 1.2);
-    fill.position.set(3, -2, 2);
+    const fill = new THREE.DirectionalLight("#FF7A59", 1.4);
+    fill.position.set(3, -1, 3);
     scene.add(fill);
 
-    const ambient = new THREE.AmbientLight("#ffffff", 0.6);
+    const ambient = new THREE.AmbientLight("#ffffff", 0.7);
     scene.add(ambient);
 
+    const topLight = new THREE.PointLight("#ffffff", 1.2, 10);
+    topLight.position.set(0, 3, 3);
+    scene.add(topLight);
+
+    // ---- orbiting sparkles ----
+    const sparkleCount = 60;
+    const sparkleGeo = new THREE.BufferGeometry();
+    const positions = new Float32Array(sparkleCount * 3);
+    for (let i = 0; i < sparkleCount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = 2.3 + Math.random() * 1.2;
+      const y = (Math.random() - 0.5) * 3;
+      positions[i * 3] = Math.cos(angle) * radius;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = Math.sin(angle) * radius;
+    }
+    sparkleGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+    const sparkleMaterial = new THREE.PointsMaterial({
+      color: "#2D9C8F",
+      size: 0.06,
+      transparent: true,
+      opacity: 0.8,
+      sizeAttenuation: true,
+    });
+    const sparkles = new THREE.Points(sparkleGeo, sparkleMaterial);
+    scene.add(sparkles);
+
+    const sparkleMaterial2 = new THREE.PointsMaterial({
+      color: "#FF7A59",
+      size: 0.05,
+      transparent: true,
+      opacity: 0.7,
+      sizeAttenuation: true,
+    });
+    const sparkles2 = new THREE.Points(sparkleGeo.clone(), sparkleMaterial2);
+    sparkles2.rotation.y = Math.PI / 2;
+    scene.add(sparkles2);
+
+    // ---- interaction ----
     let targetX = 0;
     let targetY = 0;
 
@@ -65,8 +120,8 @@ export default function Hero3DTooth() {
       const rect = mount.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;
       const y = (e.clientY - rect.top) / rect.height - 0.5;
-      targetX = x * 0.6;
-      targetY = y * 0.6;
+      targetX = x * 0.5;
+      targetY = y * 0.4;
     };
     window.addEventListener("mousemove", onMouseMove);
 
@@ -75,10 +130,16 @@ export default function Hero3DTooth() {
 
     const animate = () => {
       const t = clock.getElapsedTime();
-      mesh.rotation.y += 0.004;
-      mesh.rotation.x += (targetY - mesh.rotation.x) * 0.05;
-      mesh.rotation.z += (targetX - mesh.rotation.z) * 0.05;
-      mesh.position.y = Math.sin(t * 0.8) * 0.15;
+
+      toothGroup.rotation.y += 0.006;
+      toothGroup.rotation.x += (targetY - toothGroup.rotation.x) * 0.05;
+      toothGroup.rotation.z += (targetX - toothGroup.rotation.z) * 0.05;
+      toothGroup.position.y = Math.sin(t * 0.8) * 0.15;
+
+      sparkles.rotation.y += 0.0025;
+      sparkles2.rotation.y -= 0.002;
+      sparkleMaterial.opacity = 0.5 + Math.sin(t * 2) * 0.3;
+      sparkleMaterial2.opacity = 0.5 + Math.cos(t * 2) * 0.3;
 
       renderer.render(scene, camera);
       frameId = requestAnimationFrame(animate);
@@ -98,12 +159,16 @@ export default function Hero3DTooth() {
       cancelAnimationFrame(frameId);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", onResize);
-      geometry.dispose();
-      material.dispose();
+      crownGeo.dispose();
+      rootGeo.dispose();
+      pearlMaterial.dispose();
+      sparkleGeo.dispose();
+      sparkleMaterial.dispose();
+      sparkleMaterial2.dispose();
       renderer.dispose();
       mount.removeChild(renderer.domElement);
     };
   }, []);
 
-  return <div ref={mountRef} className="w-full h-[380px] md:h-[420px]" />;
+  return <div ref={mountRef} className="w-full h-[420px] md:h-[480px]" />;
 }
